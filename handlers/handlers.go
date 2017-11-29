@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Skarlso/goquestwebapp/database"
-	"github.com/Skarlso/goquestwebapp/structs"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/karuppaiah/kalgo/database"
+	"github.com/karuppaiah/kalgo/structs"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )

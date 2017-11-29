@@ -7,7 +7,7 @@ import (
 	// Database driver
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/Skarlso/goquestwebapp/structs"
+	"github.com/karuppaiah/kalgo/structs"
 )
 
 // Save saves the passed in Character.

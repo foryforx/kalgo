@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/Skarlso/goquestwebapp/structs"
+	"github.com/karuppaiah/kalgo/structs"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )

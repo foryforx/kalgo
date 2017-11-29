@@ -1,10 +1,10 @@
 # GoProgressQuest - Web application
 
-Web based version of [GoProgressQuest](https://github.com/Skarlso/goprogressquest).
+Web based version of [GoProgressQuest](https://github.com/karuppaiah/goprogressquest).
 
 # Installation
 
-Simply `go get github.com/Skarlso/goquestwebapp`.
+Simply `go get github.com/karuppaiah/kalgo`.
 
 # Setup
 
@@ -31,5 +31,5 @@ To run it, simply build & run and navigate to http://127.0.0.1:9090/login, nothi
 
 ```
 go build
-./goquestwebapp
+./kalgo
 ```

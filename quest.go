@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/Skarlso/goquestwebapp/handlers"
-	"github.com/Skarlso/goquestwebapp/middleware"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/karuppaiah/kalgo/handlers"
+	"github.com/karuppaiah/kalgo/middleware"
 )
 
 func main() {
@@ -31,5 +31,5 @@ func main() {
 		authorized.GET("/field", handlers.FieldHandler)
 	}
 
-	router.Run("127.0.0.1:9090")
+	router.Run("localhost:9090")
 }
