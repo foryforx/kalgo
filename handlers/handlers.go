@@ -11,10 +11,10 @@ import (
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/karuppaiah/kalgo/database"
-	"github.com/karuppaiah/kalgo/structs"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"kalgo/database"
+	"kalgo/structs"
 )
 
 var cred Credentials
@@ -103,17 +103,17 @@ func AuthHandler(c *gin.Context) {
 		return
 	}
 	seen := false
-	db := database.MongoDBConnection{}
-	if _, mongoErr := db.LoadUser(u.Email); mongoErr == nil {
-		seen = true
-	} else {
-		err = db.SaveUser(&u)
-		if err != nil {
-			log.Println(err)
-			c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error while saving user. Please try again."})
-			return
-		}
-	}
+	// db := database.MongoDBConnection{}
+	// if _, mongoErr := db.LoadUser(u.Email); mongoErr == nil {
+	// 	seen = true
+	// } else {
+	// 	err = db.SaveUser(&u)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error while saving user. Please try again."})
+	// 		return
+	// 	}
+	// }
 	c.HTML(http.StatusOK, "battle.tmpl", gin.H{"email": u.Email, "seen": seen})
 }
 
@@ -133,4 +133,17 @@ func FieldHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userID := session.Get("user-id")
 	c.HTML(http.StatusOK, "field.tmpl", gin.H{"user": userID})
+}
+
+// AddressHandler handles the address fetch.
+func AddressHandler(c *gin.Context) {
+	//session := sessions.Default(c)
+	// userID := session.Get("user-id")
+	var address []structs.Address
+
+	if err := database.DBCon.Find(&address).Error; err != nil {
+		c.AbortWithStatus(404)
+	} else {
+		c.JSON(200, address)
+	}
 }
