@@ -1,4 +1,20 @@
-package structs
+package models
+
+// import (
+// 	"crypto/rand"
+// 	"encoding/base64"
+// 	"encoding/json"
+// 	"io/ioutil"
+// 	"log"
+// 	"net/http"
+// 	"os"
+
+// 	"github.com/gin-gonic/contrib/sessions"
+// 	"github.com/gin-gonic/gin"
+// 	// "github.com/karuppaiah/kalgo/database"
+// 	"golang.org/x/oauth2"
+// 	"golang.org/x/oauth2/google"
+// )
 
 // User is a retrieved and authentiacted user.
 type User struct {

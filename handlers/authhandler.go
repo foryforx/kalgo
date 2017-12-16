@@ -11,11 +11,13 @@ import (
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/karuppaiah/kalgo/database"
+	"github.com/karuppaiah/kalgo/models"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"kalgo/database"
-	"kalgo/structs"
 )
+
+type AuthHandler struct{}
 
 var cred Credentials
 var conf *oauth2.Config
@@ -48,7 +50,7 @@ func init() {
 	conf = &oauth2.Config{
 		ClientID:     cred.Cid,
 		ClientSecret: cred.Csecret,
-		RedirectURL:  "http://127.0.0.1:9090/auth",
+		RedirectURL:  "http://localhost:9090/auth",
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
 		},
@@ -56,13 +58,13 @@ func init() {
 	}
 }
 
-// IndexHandler handels /.
-func IndexHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.tmpl", gin.H{})
-}
+// // IndexHandler handels /.
+// func IndexHandler(c *gin.Context) {
+// 	c.HTML(http.StatusOK, "index.tmpl", gin.H{})
+// }
 
 // AuthHandler handles authentication of a user and initiates a session.
-func AuthHandler(c *gin.Context) {
+func (hndlr AuthHandler) AuthenticateHandler(c *gin.Context) {
 	// Handle the exchange code to initiate a transport.
 	session := sessions.Default(c)
 	retrievedState := session.Get("state")
@@ -89,7 +91,7 @@ func AuthHandler(c *gin.Context) {
 	}
 	defer userinfo.Body.Close()
 	data, _ := ioutil.ReadAll(userinfo.Body)
-	u := structs.User{}
+	u := models.User{}
 	if err = json.Unmarshal(data, &u); err != nil {
 		log.Println(err)
 		c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error marshalling response. Please try agian."})
@@ -103,22 +105,23 @@ func AuthHandler(c *gin.Context) {
 		return
 	}
 	seen := false
-	// db := database.MongoDBConnection{}
-	// if _, mongoErr := db.LoadUser(u.Email); mongoErr == nil {
-	// 	seen = true
-	// } else {
-	// 	err = db.SaveUser(&u)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error while saving user. Please try again."})
-	// 		return
-	// 	}
-	// }
+	log.Println(u.Email)
+	if dbErr := database.DBCon.Where("email = ?", u.Email).Find(&models.User{}).Error; dbErr == nil {
+		seen = true
+	} else {
+		dbErr = database.DBCon.Create(&u).Error
+		if dbErr != nil {
+			log.Println(err)
+			c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error while saving user. Please try again."})
+			return
+		}
+	}
+	log.Printf("Stored email: %s\n", u.Email)
 	c.HTML(http.StatusOK, "battle.tmpl", gin.H{"email": u.Email, "seen": seen})
 }
 
 // LoginHandler handles the login procedure.
-func LoginHandler(c *gin.Context) {
+func (hndlr AuthHandler) LoginHandler(c *gin.Context) {
 	state := RandToken(32)
 	session := sessions.Default(c)
 	session.Set("state", state)
@@ -129,21 +132,8 @@ func LoginHandler(c *gin.Context) {
 }
 
 // FieldHandler is a rudementary handler for logged in users.
-func FieldHandler(c *gin.Context) {
+func (hndlr AuthHandler) FieldHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userID := session.Get("user-id")
 	c.HTML(http.StatusOK, "field.tmpl", gin.H{"user": userID})
-}
-
-// AddressHandler handles the address fetch.
-func AddressHandler(c *gin.Context) {
-	//session := sessions.Default(c)
-	// userID := session.Get("user-id")
-	var address []structs.Address
-
-	if err := database.DBCon.Find(&address).Error; err != nil {
-		c.AbortWithStatus(404)
-	} else {
-		c.JSON(200, address)
-	}
 }

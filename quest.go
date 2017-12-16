@@ -1,17 +1,20 @@
 package main
 
 import (
-	//"fmt"
+	// "fmt"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	// "net/http"
+	// "runtime"
 	// _ "github.com/jinzhu/gorm/dialects/sqlite"
 	//"fmt"
-	"kalgo/database"
-	"kalgo/handlers"
-	"kalgo/middleware"
-	"kalgo/structs"
+	"github.com/karuppaiah/kalgo/database"
+	// "github.com/karuppaiah/kalgo/handlers"
+	"github.com/karuppaiah/kalgo/middleware"
+	"github.com/karuppaiah/kalgo/models"
+	"github.com/karuppaiah/kalgo/routes"
 )
 
 var db *gorm.DB
@@ -125,30 +128,61 @@ var err error
 func main() {
 	database.DBCon = database.Init()
 	defer database.DBCon.Close()
-	database.DBCon.AutoMigrate(&structs.Address{})
+	database.DBCon.AutoMigrate(&models.Address{})
+	database.DBCon.AutoMigrate(&models.User{})
+	database.DBCon.AutoMigrate(&models.Customer{})
+	database.DBCon.AutoMigrate(&models.CustAddMap{})
+
 	router := gin.Default()
-	store := sessions.NewCookieStore([]byte(handlers.RandToken(64)))
-	store.Options(sessions.Options{
-		Path:   "/",
-		MaxAge: 86400 * 7,
-	})
+	// store := sessions.NewCookieStore([]byte(handlers.RandToken(64)))
+	// store.Options(sessions.Options{
+	// 	Path:   "/",
+	// 	MaxAge: 86400 * 7,
+	// })
+	store, _ := sessions.NewRedisStore(10, "tcp", "localhost:6379", "", []byte("secret"))
+	router.Use(sessions.Sessions("kalgo-session", store))
+
+	router.Use(middleware.CORSMiddleware())
+
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-	router.Use(sessions.Sessions("goquestsession", store))
+	router.Use(sessions.Sessions("kalgo-session", store))
 	router.Static("/css", "./static/css")
 	router.Static("/img", "./static/img")
 	router.LoadHTMLGlob("templates/*")
+	routes.InitializeRoutes(router)
 
-	router.GET("/", handlers.IndexHandler)
-	router.GET("/login", handlers.LoginHandler)
-	router.GET("/auth", handlers.AuthHandler)
-	router.GET("/address", handlers.AddressHandler)
+	// v1 := router.Group("/v1")
+	// {
+	// 	/*** START USER ***/
+	// 	// user := new(controllers.UserController)
 
-	authorized := router.Group("/battle")
-	authorized.Use(middleware.AuthorizeRequest())
-	{
-		authorized.GET("/field", handlers.FieldHandler)
-	}
+	// 	// v1.POST("/user/signin", user.Signin)
+	// 	// v1.POST("/user/signup", user.Signup)
+	// 	// v1.GET("/user/signout", user.Signout)
+
+	// 	/*** START Article ***/
+	// 	// article := new(controllers.ArticleController)
+
+	// 	// v1.POST("/article", article.Create)
+	// 	// v1.GET("/articles", article.All)
+	// 	// v1.GET("/article/:id", article.One)
+	// 	// v1.PUT("/article/:id", article.Update)
+	// 	// v1.DELETE("/article/:id", article.Delete)
+	// }
+	// auth := new(handlers.AuthHandler)
+	// index := new(handlers.IndexHandler)
+	// address := new(handlers.AddressHandler)
+	// router.GET("/", index.HomeHandler)
+	// router.GET("/login", auth.LoginHandler)
+	// router.GET("/auth", auth.AuthenticateHandler)
+	// router.GET("/address", address.GetAllAddress)
+
+	// authorized := router.Group("/battle")
+	// authorized.Use(middleware.AuthorizeRequest())
+	// {
+	// 	authorized.GET("/field", handlers.FieldHandler)
+	// }
 
 	router.Run("localhost:9090")
 }
